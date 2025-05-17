@@ -1,7 +1,7 @@
 #![no_std]
 use wokwi::prelude::*;
 
-const RESPONSE: [u8; 4] = [0xDE, 0xAD, 0xBE, 0xEF]; // fake UID
+const RESPONSE: [u8; 4] = [0xDE, 0xAD, 0xBE, 0xEF]; // Fake UID
 
 #[entry]
 fn main() -> ! {
@@ -10,14 +10,15 @@ fn main() -> ! {
     let miso = pin!("MISO");
     let cs = pin!("CS");
 
-    let mut bit_buf = 0u8;
+    let mut bit_buf: u8 = 0;
     let mut bit_count = 0;
     let mut response_ptr = 0;
 
     loop {
-        sck.wait_for_high(); // rising edge of clock
+        sck.wait_for_high(); // Rising edge
 
         if cs.is_low() {
+            // Shift in bit from MOSI
             bit_buf <<= 1;
             if mosi.is_high() {
                 bit_buf |= 1;
@@ -25,21 +26,23 @@ fn main() -> ! {
             bit_count += 1;
 
             if bit_count == 8 {
-                // received a byte from master
+                // Byte received
                 if bit_buf == 0x26 {
-                    // if REQA command, start sending UID
+                    // If REQA command, reset response
                     response_ptr = 0;
                 }
 
-                // send response byte
+                // Send next byte from response buffer
                 let out_byte = RESPONSE[response_ptr % RESPONSE.len()];
-                miso.set_level((out_byte & 0x80) != 0); // send MSB first
+                miso.set_level((out_byte & 0x80) != 0); // MSB
+
                 response_ptr += 1;
-                bit_count = 0;
                 bit_buf = 0;
+                bit_count = 0;
             }
         }
 
-        sck.wait_for_low(); // falling edge (optional, just pacing)
+        sck.wait_for_low(); // Optional pacing
     }
 }
+
