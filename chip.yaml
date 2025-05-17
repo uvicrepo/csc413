@@ -1,14 +1,1 @@
-name: simple-rfid
-author: your_name
-language: rust
-pins:
-  - name: SCK
-    dir: in
-  - name: MOSI
-    dir: in
-  - name: MISO
-    dir: out
-  - name: CS
-    dir: in
-  - name: RST
-    dir: in
+
